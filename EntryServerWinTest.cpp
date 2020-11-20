@@ -57,37 +57,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (hMapObject = CreateFileMappingA((HANDLE)0xFFFFFFFF, nullptr, PAGE_READWRITE, 0, 1024, "myServerMapFile"); hMapObject == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
 			{
-				MessageBoxA(nullptr, "Не получилось создать объект отображения", "Ошибка", MB_OK);
+				MessageBoxA(nullptr, "ГЌГҐ ГЇГ®Г«ГіГ·ГЁГ«Г®Г±Гј Г±Г®Г§Г¤Г ГІГј Г®ГЎГєГҐГЄГІ Г®ГІГ®ГЎГ°Г Г¦ГҐГ­ГЁГї", "ГЋГёГЁГЎГЄГ ", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (lpMap = MapViewOfFile(hMapObject, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 1024); lpMap == NULL)
 			{
-				MessageBoxA(nullptr, "Не получилось отобразить файл на память", "Ошибка", MB_OK);
+				MessageBoxA(nullptr, "ГЌГҐ ГЇГ®Г«ГіГ·ГЁГ«Г®Г±Гј Г®ГІГ®ГЎГ°Г Г§ГЁГІГј ГґГ Г©Г« Г­Г  ГЇГ Г¬ГїГІГј", "ГЋГёГЁГЎГЄГ ", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (hEvent = CreateEventA(NULL, FALSE, FALSE, "myServerEvent"); hEvent == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
 			{
-				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
+				MessageBoxA(nullptr, "ГЌГҐ ГЇГ®Г«ГіГ·ГЁГ«Г®Г±Гј Г±Г®Г§Г¤Г ГІГј Г±Г®ГЎГ»ГІГЁГҐ", "ГЋГёГЁГЎГЄГ ", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (hEventGetType = CreateEventA(NULL, FALSE, FALSE, "myServerEventGetType"); hEventGetType == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
 			{
-				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
+				MessageBoxA(nullptr, "ГЌГҐ ГЇГ®Г«ГіГ·ГЁГ«Г®Г±Гј Г±Г®Г§Г¤Г ГІГј Г±Г®ГЎГ»ГІГЁГҐ", "ГЋГёГЁГЎГЄГ ", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (hEventDispatchComplete = CreateEventA(NULL, FALSE, FALSE, "myServerEventDispatchComplete"); hEventDispatchComplete == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
 			{
-				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
+				MessageBoxA(nullptr, "ГЌГҐ ГЇГ®Г«ГіГ·ГЁГ«Г®Г±Гј Г±Г®Г§Г¤Г ГІГј Г±Г®ГЎГ»ГІГЁГҐ", "ГЋГёГЁГЎГЄГ ", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (hEventClose = CreateEventA(NULL, FALSE, FALSE, "myServerEventClose"); hEventClose == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
 			{
-				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
+				MessageBoxA(nullptr, "ГЌГҐ ГЇГ®Г«ГіГ·ГЁГ«Г®Г±Гј Г±Г®Г§Г¤Г ГІГј Г±Г®ГЎГ»ГІГЁГҐ", "ГЋГёГЁГЎГЄГ ", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
