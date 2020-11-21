@@ -1,14 +1,18 @@
 //Client
+/*для современных стилей для кнопок етк*/
 #pragma comment(linker,"\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 #include <Windows.h>
 
+/*функция winProc для обработки сообщений*/
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
+/*точка входа*/
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdShow)
 {
+	//стандартная инициация
 	MSG msg{};
 	HWND hwnd{};
 	WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
@@ -44,69 +48,138 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdS
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static HANDLE hMapObject = nullptr, hEventDispatchComplete = nullptr, hEvent = nullptr, hEventGetType = nullptr, hEventClose = nullptr;
-	static HANDLE hEvents[] = { hEvent, hEventGetType };
+	//ивенты и файла отображения
+	static HANDLE hMapObject = nullptr, hEventDispatchComplete = nullptr, hEventStartDispatch = nullptr, hEventSetType = nullptr, hEventClose = nullptr;
 	static LPVOID lpMap = nullptr; LPINT lpIntMap = nullptr;
 
-	static INT int_buff[256];
+	//идентификатор таймера №1 (пока только один)
+	static const UINT IDT_TIMER1 = 1;
+
+	//тип передаваемый на сервер я предпологаю, что тип будет задаваться в кнопке или еще в чем нибудь
+	//там же будет передаваться на сервер, код для передачи указан ниже
 	static INT type;
+	//переданый массив
+	static INT iBuff[256];
 
 	switch (uMsg)
 	{
+		//при создании
 		case WM_CREATE:
 		{
+			//открываем события/отображения етк
 			if (hMapObject = OpenFileMappingA(FILE_MAP_READ | FILE_MAP_WRITE, FALSE, "myServerMapFile"); hMapObject == NULL)
 			{
-				MessageBoxA(nullptr, "Íå ïîëó÷èëîñü îòêðûòü îáúåêò îòîáðàæåíèÿ", "Îøèáêà", MB_OK);
+				MessageBoxA(nullptr, "Не получилось открыть объект отображения", "Ошибка", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (lpMap = MapViewOfFile(hMapObject, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 1024); lpMap == NULL)
 			{
-				MessageBoxA(nullptr, "Íå ïîëó÷èëîñü îòîáðàçèòü ôàéë íà ïàìÿòü", "Îøèáêà", MB_OK);
+				MessageBoxA(nullptr, "Не получилось отобразить файл на память", "Ошибка", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
-			if (hEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "myServerEvent"); hEvent == NULL)
+			if (hEventStartDispatch = OpenEventA(EVENT_ALL_ACCESS, FALSE, "myServerEventStartDispatch"); hEventStartDispatch == NULL)
 			{
-				MessageBoxA(nullptr, "Íå ïîëó÷èëîñü ñîçäàòü ñîáûòèå", "Îøèáêà", MB_OK);
+				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
-			if (hEventGetType = OpenEventA(EVENT_ALL_ACCESS, FALSE, "myServerEventGetType"); hEventGetType == NULL)
+			if (hEventSetType = OpenEventA(EVENT_ALL_ACCESS, FALSE, "myServerEventGetType"); hEventSetType == NULL)
 			{
-				MessageBoxA(nullptr, "Íå ïîëó÷èëîñü ñîçäàòü ñîáûòèå", "Îøèáêà", MB_OK);
+				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (hEventDispatchComplete = OpenEventA(EVENT_ALL_ACCESS, FALSE, "myServerEventDispatchComplete"); hEventDispatchComplete == NULL)
 			{
-				MessageBoxA(nullptr, "Íå ïîëó÷èëîñü ñîçäàòü ñîáûòèå", "Îøèáêà", MB_OK);
+				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
 			if (hEventClose = OpenEventA(EVENT_ALL_ACCESS, FALSE, "myServerEventClose"); hEventClose == NULL)
 			{
-				MessageBoxA(nullptr, "Íå ïîëó÷èëîñü ñîçäàòü ñîáûòèå", "Îøèáêà", MB_OK);
+				MessageBoxA(nullptr, "Не получилось создать событие", "Ошибка", MB_OK);
 				PostQuitMessage(EXIT_FAILURE);
 				return GetLastError();
 			}
+			if (UINT uRetCode = SetTimer(hWnd, IDT_TIMER1, 10, (TIMERPROC)NULL); uRetCode == 0)
+			{
+				MessageBoxA(NULL, "Не получилось создать таймер", "Ошибка", MB_OK);
+				PostQuitMessage(EXIT_FAILURE);
+			}
+		}
+		return 0;
+		
+		//При уничтожении клиента/сервера
+		case WM_DESTROY:
+		{
+			//Закрываем все
+			if (lpMap != nullptr)
+				UnmapViewOfFile(lpMap);
+			if (hEventStartDispatch != nullptr)
+				CloseHandle(hEventStartDispatch);
+			if (hEventSetType != nullptr)
+				CloseHandle(hEventSetType);
+			if (hEventDispatchComplete != nullptr)
+				CloseHandle(hEventDispatchComplete);
+			if (hEventClose != nullptr)
+				CloseHandle(hEventClose);
+			if (hMapObject != nullptr)
+				CloseHandle(hMapObject);
+
+			//уничтожаем таймер
+			KillTimer(hWnd, IDT_TIMER1);
+			PostQuitMessage(EXIT_SUCCESS);
 		}
 		return 0;
 
-		case WM_DESTROY:
+		//таймер
+		case WM_TIMER:
 		{
-			if (lpMap != nullptr && hMapObject != nullptr && hEvent != nullptr && hEventGetType != nullptr && hEventDispatchComplete != nullptr && hEventClose != nullptr)
+			//если будут добавлены еще таймеры
+			switch (wParam)
 			{
-				UnmapViewOfFile(lpMap); CloseHandle(hMapObject); CloseHandle(hEvent); CloseHandle(hEventGetType); CloseHandle(hEventDispatchComplete); CloseHandle(hEventClose);
+				//первый таймер
+				case IDT_TIMER1:
+				{
+					//если ивент Закрыть включен, то закрываем окно
+					if (DWORD retCode = WaitForSingleObject(hEventClose, 1); retCode == WAIT_OBJECT_0)
+						PostQuitMessage(EXIT_SUCCESS);
+				}
+				break;
 			}
-			PostQuitMessage(EXIT_SUCCESS);
 		}
 		return 0;
 	}
 
-	if (DWORD retCode = WaitForSingleObject(hEventClose, 1); retCode == WAIT_OBJECT_0)
-		PostQuitMessage(EXIT_SUCCESS);
-
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
+
+//+++++++++++++++++++++++++++++++++++++++ВНИМАНИЕ!!!+++++++++++++++++++++++++++++++++++++++
+
+/*код для кнопки передачи типа функции*/
+/*
+*	//записываем тип в память
+*	*lpIntMap = type;		
+*	//вклюаем событие ПередатьТип
+*	SetEvent(hEventSetType);	
+*/
+
+/*код кнопки для начала передачи данных*/
+/*	//Вкл ивент начать передачу
+*	SetEvent(HEventStartDispatch);		
+*	//Ждем (бесконечно) до включения события ПередачаЗавершена
+*	if (DWORD retCode = WaitForSingleObject(hEventDispatchComplete, INFINITE); retCode == WAIT_OBJECT_0)	
+*	{
+*		//записываем в массив данные
+*		LPINT lpIntTemp = lpIntMap;
+*		INT size = *lpIntMap++;
+*		for (int i = 0; i < size; i++){
+*			iBuff = *lpIntTemp++;
+*		}
+*		ResetEvent(hEventDispatchComplete);
+*	}
+*/
+
+//+++++++++++++++++++++++++++++++++++++++ВНИМАНИЕ!!!+++++++++++++++++++++++++++++++++++++++
